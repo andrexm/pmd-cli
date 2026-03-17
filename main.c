@@ -1,6 +1,7 @@
 #include <ncurses.h>
-#include <stdatomic.h>
+#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 /**
@@ -15,6 +16,7 @@
 
 WINDOW *time;
 WINDOW *helpers;
+WINDOW *status;
 
 char *n0[] = { "$$$$$$", "$$  $$", "$$  $$", "$$  $$", "$$$$$$" }; 
 char *n1[] = { "$$$$  ", "  $$  ", "  $$  ", "  $$  ", "$$$$$$" }; 
@@ -32,6 +34,26 @@ char **digits[] = { n0, n1, n2, n3, n4, n5, n6, n7, n8, n9 };
 int time_data[] = { 2, 5, 0, 0 };
 int intervals[] = { 25, 5, 25, 5, 25, 5, 25, 15 }; // time in minutes
 int active_i = 0;
+
+// print the current status
+void print_status() {
+  char *status_type[] = { "WORK", "BREAK", "WORK", "BREAK", "WORK", "BREAK", "WORK", "LONG BREAK" };
+  char *additional_message[] = { "Let's do this!", "You deserve a break!" };
+
+  // status and message positions
+  int center_status = (44 - strlen(status_type[active_i])) / 2;
+  int center_message = (44 - strlen(additional_message[active_i % 2])) / 2;
+
+  // clear lines
+  mvwprintw(status, 0, 0, "                                        ");
+  mvwprintw(status, 1, 0, "                                        ");
+
+  // put status and message
+  mvwprintw(status, 0, center_status, "%s", status_type[active_i]);
+  mvwprintw(status, 1, center_message, "%s", additional_message[active_i % 2]);
+
+  wrefresh(status);
+}
 
 // prints a digit
 void print_n(char *n[], int position_x) {
@@ -57,6 +79,8 @@ void print_timer() {
   for (int i = 0; i < 4; i++) {
     print_n(digits[time_data[i]], positions_x[i]);
   }
+
+  print_status();
   wrefresh(time);
 }
 
@@ -169,7 +193,10 @@ int main() {
 
   helpers = newwin(6, width - 6, start_y + height + 1, start_x + 9);
   print_before_start_text();
-  
+
+  status = newwin(2, width, start_y - 3, start_x);
+
+  wrefresh(status);
   wrefresh(time);
 
   while (true) {
