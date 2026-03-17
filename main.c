@@ -9,7 +9,7 @@
     $$    $$  $$  $$$$      $$      $$
     $$    $$  $$        $$$$$$      $$
     $$    $$  $$  $$$$  $$          $$
-  $$$$$$  $$$$$$  $$$$  $$$$$$      $$ 78
+  $$$$$$  $$$$$$  $$$$  $$$$$$      $$
 
 */
 
@@ -154,7 +154,7 @@ int main() {
   halfdelay(1);
 
   getmaxyx(stdscr, max_y, max_x);
-  start_y = (max_y - height) / 2;
+  start_y = (max_y - height) / 2 - 4;
   start_x = (max_x - width) / 2;
 
   time = newwin(height, width, start_y, start_x);
@@ -167,7 +167,7 @@ int main() {
   print_n(n0, 26);
   print_n(n0, 34);
 
-  helpers = newwin(6, width - 6, start_y + height + 2, start_x + 3);
+  helpers = newwin(6, width - 6, start_y + height + 1, start_x + 9);
   print_before_start_text();
   
   wrefresh(time);
