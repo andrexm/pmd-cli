@@ -1,4 +1,6 @@
 #include <ncurses.h>
+#include <stdatomic.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 /**
@@ -10,6 +12,8 @@
   $$$$$$  $$$$$$  $$$$  $$$$$$      $$ 78
 
 */
+
+WINDOW *time;
 
 char *n0[] = { "$$$$$$", "$$  $$", "$$  $$", "$$  $$", "$$$$$$" }; 
 char *n1[] = { "$$$$  ", "  $$  ", "  $$  ", "  $$  ", "$$$$$$" }; 
@@ -24,77 +28,94 @@ char *n9[] = { "$$$$$$", "$$  $$", "$$$$$$", "    $$", "$$$$$$" };
 char *ds[] = { "$$$$", "$$$$", "    ", "$$$$", "$$$$" };
 
 char **digits[] = { n0, n1, n2, n3, n4, n5, n6, n7, n8, n9 };
-int time_data[] = { 0, 0, 0, 0 };
+int time_data[] = { 0, 0, 1, 0 };
+int intervals[] = { 25, 5, 25, 5, 25, 5, 25, 15 }; // time in minutes
+int active_i = 0;
 
 // prints a digit
-void print_n(WINDOW* win, char *n[], int position_x) {
+void print_n(char *n[], int position_x) {
   int y = 2;
   for (int i = 0; i < 5; i++) {
-    mvwprintw(win, y++, position_x, "%s", (char*)n[i]);
+    mvwprintw(time, y++, position_x, "%s", (char*)n[i]);
   }
 }
 
 // print dots between digits
-void print_dots(WINDOW* win) {
+void print_dots() {
   int x = 20;
   int y = 2;
   for (int i = 0; i < 5; i++) {
-    mvwprintw(win, y++, x, "%s", ds[i]);
+    mvwprintw(time, y++, x, "%s", ds[i]);
   }
 }
 
-void print_timer(WINDOW* win) {
+// print all digits on the screen
+void print_timer() {
   int positions_x[] = { 4, 12, 26, 34 };
 
   for (int i = 0; i < 4; i++) {
-    print_n(win, digits[time_data[i]], positions_x[i]);
+    print_n(digits[time_data[i]], positions_x[i]);
   }
 }
 
+// play a sound after finishing timer
+void triiimm() {
+  system("aplay -q ~/.config/pmd-cli/sounds/magiaz-campainha-331260.wav");
+}
+
+void next_phase() {
+  active_i++;
+  if (active_i == 4) active_i = 0;
+
+  time_data[0] = intervals[active_i] / 10;
+  time_data[1] = intervals[active_i] % 10;
+
+  print_timer();
+}
+
 // starts timer
-void run_timer(WINDOW* win, int minutes) {
+void run_timer(int minutes) {
   int key = 'a';
   int deci = 0;
 
   while (key != 'p') {
-    key = wgetch(win);
+    key = wgetch(time);
 
     if (deci == 10) {
       deci = 0;
-      time_data[3]++;
+      time_data[3]--;
     }
-    if (time_data[3] == 10) {
-      time_data[3] = 0;
-      time_data[2]++;
+    if (time_data[3] == -1) {
+      time_data[3] = 9;
+      time_data[2]--;
     }
-    if (time_data[2] == 6) {
-      time_data[2] = 0;
-      time_data[1]++;
+    if (time_data[2] == -1) {
+      time_data[2] = 5;
+      time_data[1]--;
     }
-    if (time_data[1] == 10) {
-      time_data[1] = 0;
-      time_data[0]++;
+    if (time_data[1] == -1) {
+      time_data[1] = 9;
+      time_data[0]--;
     }
 
-    //mvwprintw(win, 1, 0, "%d = %d%d:%d%d", deci, time_data[0], time_data[1], time_data[2], time_data[3]);
-    print_timer(win);
-
-    wrefresh(win);
+    print_timer();
+    wrefresh(time);
     deci++;
-    if (time_data[0] == 2 && time_data[1] == 5) {
-      time_data[0] = time_data[1] = time_data[2] = time_data[3] = 0;
+
+    // finish when everything is zero
+    if (time_data[0] == 0 && time_data[1] == 0 && time_data[2] == 0 && time_data[3] == 0) {
+      triiimm();
+      next_phase();
       break;
     }
   }
 }
 
 int main() {
-  WINDOW *time;
-
   int start_y, start_x, max_y, max_x;
   int width = 44; // 4 spaces at each x
   int height = 9; // 3 space at each y
-  
+
   initscr();
   noecho();
   raw();
@@ -109,11 +130,11 @@ int main() {
   box(time, 0, 0);
 
   // on start, print 25:00
-  print_n(time, n0, 4);
-  print_n(time, n0, 12);
-  print_dots(time);
-  print_n(time, n0, 26);
-  print_n(time, n0, 34);
+  print_n(n2, 4);
+  print_n(n5, 12);
+  print_dots();
+  print_n(n0, 26);
+  print_n(n0, 34);
 
   while (true) {
     curs_set(0);
@@ -124,7 +145,7 @@ int main() {
         return 0;
 
       case 's':
-        run_timer(time, 25);
+        run_timer(25);
         break;
     }
   }
