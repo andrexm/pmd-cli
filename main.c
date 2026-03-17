@@ -63,9 +63,10 @@ void triiimm() {
   system("aplay -q ~/.config/pmd-cli/sounds/magiaz-campainha-331260.wav");
 }
 
+// set up next time minutes
 void next_phase() {
   active_i++;
-  if (active_i == 4) active_i = 0;
+  if (active_i == 8) active_i = 0;
 
   time_data[0] = intervals[active_i] / 10;
   time_data[1] = intervals[active_i] % 10;
