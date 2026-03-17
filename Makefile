@@ -1,2 +1,2 @@
 app: main.c
-	$(CC) main.c -o pomocli -Wall -Wextra -pedantic -lncurses -lm 
+	$(CC) main.c -o pmd-cli -Wall -Wextra -pedantic -lncurses -lm 
