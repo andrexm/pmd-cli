@@ -63,11 +63,11 @@ void print_timer() {
 void print_before_start_text() {
   char *helper_lines[6];
   helper_lines[0] = "[s] Start Timer / Resume";
-  helper_lines[5] = "[p] Pause";
-  helper_lines[1] = "[r] Restart Timer";
-  helper_lines[2] = "[n] Next Interval";
-  helper_lines[3] = "[t] Test Bell Sound"; // verify file exists and play
-  helper_lines[4] = "[q] Quit";
+  helper_lines[1] = "[p] Pause";
+  helper_lines[2] = "[r] Restart Timer";
+  helper_lines[3] = "[n] Next Interval";
+  helper_lines[4] = "[t] Test Bell Sound"; // verify file exists and play
+  helper_lines[5] = "[q] Quit";
 
   for (int y = 0; y < 6; y++) {
     mvwprintw(helpers, y, 0, "%s", helper_lines[y]);
