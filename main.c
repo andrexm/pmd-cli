@@ -14,6 +14,7 @@
 */
 
 WINDOW *time;
+WINDOW *helpers;
 
 char *n0[] = { "$$$$$$", "$$  $$", "$$  $$", "$$  $$", "$$$$$$" }; 
 char *n1[] = { "$$$$  ", "  $$  ", "  $$  ", "  $$  ", "$$$$$$" }; 
@@ -28,7 +29,7 @@ char *n9[] = { "$$$$$$", "$$  $$", "$$$$$$", "    $$", "$$$$$$" };
 char *ds[] = { "$$$$", "$$$$", "    ", "$$$$", "$$$$" };
 
 char **digits[] = { n0, n1, n2, n3, n4, n5, n6, n7, n8, n9 };
-int time_data[] = { 0, 0, 1, 0 };
+int time_data[] = { 2, 5, 0, 0 };
 int intervals[] = { 25, 5, 25, 5, 25, 5, 25, 15 }; // time in minutes
 int active_i = 0;
 
@@ -56,6 +57,22 @@ void print_timer() {
   for (int i = 0; i < 4; i++) {
     print_n(digits[time_data[i]], positions_x[i]);
   }
+  wrefresh(time);
+}
+
+void print_before_start_text() {
+  char *helper_lines[5];
+  helper_lines[0] = "[s] Start Timer";
+  helper_lines[1] = "[r] Restart Timer";
+  helper_lines[2] = "[n] Next Interval";
+  helper_lines[3] = "[t] Test Bell Sound"; // verify file exists and play
+  helper_lines[4] = "[q] Quit";
+
+  for (int y = 0; y < 5; y++) {
+    mvwprintw(helpers, y, 0, "%s", helper_lines[y]);
+  }
+  wrefresh(time);
+  wrefresh(helpers);
 }
 
 // play a sound after finishing timer
@@ -70,8 +87,20 @@ void next_phase() {
 
   time_data[0] = intervals[active_i] / 10;
   time_data[1] = intervals[active_i] % 10;
+  time_data[2] = 0;
+  time_data[3] = 0;
 
   print_timer();
+}
+
+// prepare timer to start again current session
+void restart_timer() {
+  active_i = active_i - 1;
+  if (active_i == -1) {
+    active_i = 3;
+  }
+
+  next_phase();
 }
 
 // starts timer
@@ -137,16 +166,34 @@ int main() {
   print_n(n0, 26);
   print_n(n0, 34);
 
+  helpers = newwin(6, width - 6, start_y + height + 2, start_x + 3);
+  print_before_start_text();
+  
+  wrefresh(time);
+
   while (true) {
     curs_set(0);
-    int key = wgetch(time);
+    int key = wgetch(helpers);
 
+    wrefresh(helpers);
     switch (key) {
       case 'q':
         return 0;
 
       case 's':
         run_timer(25);
+        break;
+
+      case 't':
+        triiimm();
+        break;
+
+      case 'n':
+        next_phase();
+        break;
+
+      case 'r':
+        restart_timer();
         break;
     }
   }
