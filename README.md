@@ -126,7 +126,7 @@ After the long break, the cycle repeats from the beginning.
 
 On Debian/Ubuntu, install missing dependencies with:
 ```bash
-sudo apt-get install libncurses5-dev alsa-utils
+sudo apt install libncurses5-dev alsa-utils
 ```
 
 On Arch Linux:
